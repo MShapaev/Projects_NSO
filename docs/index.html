@@ -66,7 +66,7 @@ function select(id,task=null){selected=id;taskSelected=task;paint();const r=R[id
  if(r.task_ids.length){
 
   const mine=new Set(r.task_ids),received=D.edges.filter(x=>mine.has(x.target)),issued=D.edges.filter(x=>mine.has(x.source));
-  for(const [title,links,incoming]of [['Получаемые задания по этапам',received,true],['Выдаваемые задания по этапам',issued,false]]){
+  for(const [title,links,incoming]of [['Получить',received,true],['Выдать',issued,false]]){
    if(!links.length)continue;
    s+=`<details><summary>${title} (${links.length})</summary><table><thead><tr><th>Данные и раздел</th><th>Назначение</th><th>Передача</th></tr></thead><tbody>`;
    for(const x of links){const from=A[x.source],to=A[x.target];s+=`<tr><td><b>${e(incoming?from.code:to.code)}</b><br>${e(from.name)}<br>${e(from.description)}</td><td>${e(to.name)}<br>${e(incoming?from.owner:to.owner)}<br>Начало ${fmt(to.start)}</td><td>${fmt(from.end)}</td></tr>`}
