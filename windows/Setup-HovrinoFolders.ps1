@@ -75,9 +75,15 @@ internal static class HovrinoFolders
     [DllImport("shell32.dll")]
     private static extern int SHOpenFolderAndSelectItems(IntPtr folder, uint count, IntPtr children, uint flags);
 
+    [DllImport("ole32.dll")]
+    private static extern int CoInitializeEx(IntPtr reserved,uint mode);
+    [DllImport("ole32.dll")]
+    private static extern void CoUninitialize();
+
     [STAThread]
     private static void Main(string[] args)
     {
+        bool comInitialized=false;
         try {
             if (args.Length != 1) throw new ArgumentException("Откройте комплект значком папки в графике Ховрино.");
             Match match=Regex.Match(args[0], @"\Anso-hovrino://album/(R2\.[0-9]+)/?\z", RegexOptions.IgnoreCase|RegexOptions.CultureInvariant);
@@ -95,6 +101,7 @@ internal static class HovrinoFolders
             uint attributes=GetFileAttributesW(extended);
             if (attributes==UInt32.MaxValue || (attributes&16)==0)
                 throw new IOException("Папка недоступна. Проверьте подключение сетевого диска или VPN, права доступа и создание папок по скрипту.\n\n"+folder);
+            Marshal.ThrowExceptionForHR(CoInitializeEx(IntPtr.Zero,2));comInitialized=true;
             IntPtr item=IntPtr.Zero;uint resultAttributes;
             int result=SHParseDisplayName(folder,IntPtr.Zero,out item,0,out resultAttributes);
             if (result<0) {
@@ -107,7 +114,7 @@ internal static class HovrinoFolders
             } finally { if(item!=IntPtr.Zero) Marshal.FreeCoTaskMem(item); }
         } catch(Exception ex) {
             MessageBox.Show(ex.Message,"Папки РД Ховрино",MessageBoxButtons.OK,MessageBoxIcon.Information);
-        }
+        } finally { if(comInitialized)CoUninitialize(); }
     }
 }
 
